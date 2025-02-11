@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  front:
+    build:
+      context: ./front-ppd-vue
+      dockerfile: Dockerfile
+    container_name: vue-front
+    ports:
+      - "8000:80"
+    depends_on:
+      - produtos_api
+      - clientes_api
+      - vendas_api
+    networks:
+      - app-network
+
+  produtos_api:
+    build:
+      context: ./produtos_api
+      dockerfile: Dockerfile
+    container_name: api-produtos
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  clientes_api:
+    build:
+      context: ./clientes_api
+      dockerfile: Dockerfile
+    container_name: api-clientes
+    ports:
+      - "3001:3001"
+    networks:
+      - app-network
+
+  vendas_api:
+    build:
+      context: ./vendas_api
+      dockerfile: Dockerfile
+    container_name: api-vendas
+    ports:
+      - "3002:3002"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DB=vendas_ppd
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=123
+      - MYSQL_PORT=3306
+    depends_on:
+      - mysql
+      - clientes_api
+      - produtos_api
+    networks:
+      - app-network
+    command: ["./wait-for-it.sh", "-t", "60", "mysql:3306", "--", "npm", "run", "start-dev"]
+
+  mysql:
+    image: mysql:8.0
+    container_name: laravel_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: vendas_ppd
+      MYSQL_ROOT_PASSWORD: "123"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
