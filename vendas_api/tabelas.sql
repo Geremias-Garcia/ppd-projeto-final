@@ -1,0 +1,6 @@
+CREATE TABLE vendas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente VARCHAR(255) NOT NULL,
+    produto VARCHAR(255) NOT NULL,
+    data DATETIME NOT NULL
+);
